@@ -23,10 +23,9 @@ export enum SessionStatus {
 }
 
 export enum AttendanceStatus {
-  PRESENT = 'present',
+  ATTENDED = 'attended',
   ABSENT = 'absent',
-  LATE = 'late',
-  EXCUSED = 'excused',
+  CANCELLED = 'cancelled',
 }
 
 export enum PaymentStatus {
