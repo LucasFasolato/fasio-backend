@@ -10,9 +10,11 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -24,6 +26,7 @@ import { StudentsService } from './students.service';
 
 @ApiTags('Students')
 @ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @UseGuards(JwtAuthGuard)
 @Controller('students')
 export class StudentsController {
@@ -31,6 +34,7 @@ export class StudentsController {
 
   @Post()
   @ApiOperation({ summary: 'Create a student for the authenticated professional' })
+  @ApiCreatedResponse({ description: 'Student created successfully' })
   async create(@CurrentUser() user: User, @Body() dto: CreateStudentDto) {
     const student = await this.studentsService.create(user.id, dto);
     return successResponse(student);
@@ -64,7 +68,7 @@ export class StudentsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Deactivate a student (soft delete, ownership enforced)' })
+  @ApiOperation({ summary: 'Deactivate a student — soft delete, sets status to inactive (ownership enforced)' })
   @ApiNotFoundResponse({ description: 'Student not found' })
   async remove(@CurrentUser() user: User, @Param('id') id: string) {
     const student = await this.studentsService.remove(user.id, id);

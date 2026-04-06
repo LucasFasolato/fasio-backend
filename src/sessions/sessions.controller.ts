@@ -1,9 +1,11 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -16,6 +18,7 @@ import { SessionsService } from './sessions.service';
 
 @ApiTags('Sessions')
 @ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @UseGuards(JwtAuthGuard)
 @Controller('sessions')
 export class SessionsController {
@@ -23,6 +26,7 @@ export class SessionsController {
 
   @Post()
   @ApiOperation({ summary: 'Create a session for an owned student' })
+  @ApiCreatedResponse({ description: 'Session created successfully' })
   @ApiNotFoundResponse({ description: 'Student not found or not owned' })
   async create(@CurrentUser() user: User, @Body() dto: CreateSessionDto) {
     const session = await this.sessionsService.create(user.id, dto);
@@ -57,7 +61,7 @@ export class SessionsController {
   }
 
   @Patch(':id/cancel')
-  @ApiOperation({ summary: 'Cancel a session (status → cancelled, ownership enforced)' })
+  @ApiOperation({ summary: 'Cancel a session — sets status to cancelled (ownership enforced)' })
   @ApiNotFoundResponse({ description: 'Session not found' })
   async cancel(@CurrentUser() user: User, @Param('id') id: string) {
     const session = await this.sessionsService.cancel(user.id, id);

@@ -2,6 +2,8 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@n
 import {
   ApiBearerAuth,
   ApiConflictResponse,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -22,6 +24,7 @@ export class AuthController {
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new professional account' })
+  @ApiCreatedResponse({ description: 'Account created — returns JWT access token' })
   @ApiConflictResponse({ description: 'Email already registered' })
   async register(@Body() dto: RegisterDto) {
     const result = await this.authService.register(dto);
@@ -44,6 +47,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Get authenticated user profile' })
   @ApiOkResponse({ description: 'Returns the authenticated professional profile' })
   @ApiUnauthorizedResponse({ description: 'Invalid or expired token' })
+  @ApiNotFoundResponse({ description: 'Professional profile not found' })
   async me(@CurrentUser() user: User) {
     const result = await this.authService.getMe(user.id);
     return successResponse(this.serializeUser(result));

@@ -17,12 +17,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    const isHttpException = exception instanceof HttpException;
-    const status = isHttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+    const status =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    const errorBody = isHttpException
-      ? exception.getResponse()
-      : { message: 'Internal server error' };
+    // Extract the message cleanly: NestJS wraps it as { message, error, statusCode }
+    // or as a plain string. Validation errors produce message as string[].
+    const message = this.extractMessage(exception);
 
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
       this.logger.error(exception);
@@ -33,7 +35,28 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
-      error: errorBody,
+      message,
     });
+  }
+
+  private extractMessage(exception: unknown): string | string[] {
+    if (!(exception instanceof HttpException)) {
+      return 'Internal server error';
+    }
+
+    const body = exception.getResponse();
+
+    if (typeof body === 'string') {
+      return body;
+    }
+
+    if (typeof body === 'object' && body !== null) {
+      const msg = (body as Record<string, unknown>).message;
+      if (typeof msg === 'string' || Array.isArray(msg)) {
+        return msg as string | string[];
+      }
+    }
+
+    return 'An error occurred';
   }
 }

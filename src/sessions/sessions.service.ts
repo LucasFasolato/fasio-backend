@@ -28,6 +28,7 @@ export class SessionsService {
 
   async create(userId: string, dto: CreateSessionDto): Promise<Session> {
     const professional = await this.resolveOrFail(userId);
+    // Validate that the target student belongs to this professional before creating the session.
     await this.findOwnedStudentOrFail(professional, dto.studentId);
 
     const session = this.sessionsRepository.create({
@@ -82,6 +83,8 @@ export class SessionsService {
     return this.sessionsRepository.save(session);
   }
 
+  // Cancel sets status to CANCELLED and keeps the record for historical tracking.
+  // Status transitions (e.g. SCHEDULED → COMPLETED) will be handled via dedicated endpoints.
   async cancel(userId: string, sessionId: string): Promise<Session> {
     const professional = await this.resolveOrFail(userId);
     const session = await this.findOwnedSessionOrFail(professional, sessionId);
@@ -98,6 +101,8 @@ export class SessionsService {
     return professional;
   }
 
+  // Returns 404 regardless of whether the student exists or belongs to another professional.
+  // This prevents leaking information about the existence of resources owned by others.
   private async findOwnedStudentOrFail(
     professional: Professional,
     studentId: string,
@@ -111,6 +116,7 @@ export class SessionsService {
     return student;
   }
 
+  // Returns 404 regardless of whether the session exists or belongs to another professional.
   private async findOwnedSessionOrFail(
     professional: Professional,
     sessionId: string,

@@ -28,6 +28,7 @@ export class AttendancesService {
     const professional = await this.resolveOrFail(userId);
     await this.findOwnedSessionOrFail(professional, sessionId);
 
+    // Check before insert to return a clear 409 instead of letting the DB unique constraint fail.
     const existing = await this.attendancesRepository.findOne({
       where: { sessionId },
     });
@@ -46,6 +47,8 @@ export class AttendancesService {
 
   async findByStudent(userId: string, studentId: string): Promise<Attendance[]> {
     const professional = await this.resolveOrFail(userId);
+    // Explicit ownership check: returns 404 for foreign students, not an empty array.
+    // An empty array would be ambiguous between "no attendances" and "student not owned".
     await this.findOwnedStudentOrFail(professional, studentId);
 
     return this.attendancesRepository.find({
@@ -68,6 +71,7 @@ export class AttendancesService {
     return professional;
   }
 
+  // Returns 404 regardless of whether the session exists or belongs to another professional.
   private async findOwnedSessionOrFail(
     professional: Professional,
     sessionId: string,
@@ -81,6 +85,7 @@ export class AttendancesService {
     return session;
   }
 
+  // Returns 404 regardless of whether the student exists or belongs to another professional.
   private async findOwnedStudentOrFail(
     professional: Professional,
     studentId: string,

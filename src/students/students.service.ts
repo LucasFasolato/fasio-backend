@@ -61,6 +61,7 @@ export class StudentsService {
     return this.studentsRepository.save(student);
   }
 
+  // Soft delete: marks as inactive to preserve historical data (sessions, attendances, payments).
   async remove(userId: string, studentId: string): Promise<Student> {
     const professional = await this.resolveOrFail(userId);
     const student = await this.findOwnedOrFail(professional, studentId);
@@ -77,6 +78,8 @@ export class StudentsService {
     return professional;
   }
 
+  // Returns 404 regardless of whether the student exists or belongs to another professional.
+  // This prevents leaking information about the existence of resources owned by others.
   private async findOwnedOrFail(professional: Professional, studentId: string): Promise<Student> {
     const student = await this.studentsRepository.findOne({
       where: { id: studentId, professionalId: professional.id },

@@ -2,9 +2,11 @@ import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiConflictResponse,
+  ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -15,6 +17,7 @@ import { CreateAttendanceDto } from './dto/create-attendance.dto';
 
 @ApiTags('Attendances')
 @ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @UseGuards(JwtAuthGuard)
 @Controller()
 export class AttendancesController {
@@ -22,6 +25,7 @@ export class AttendancesController {
 
   @Post('sessions/:sessionId/attendance')
   @ApiOperation({ summary: 'Register attendance for an owned session' })
+  @ApiCreatedResponse({ description: 'Attendance registered successfully' })
   @ApiNotFoundResponse({ description: 'Session not found or not owned' })
   @ApiConflictResponse({ description: 'Attendance already registered for this session' })
   async create(
