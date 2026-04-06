@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { StudentsModule } from './students/students.module';
 import configuration from './config/configuration';
 import { validateEnv } from './config/env.validation';
 import { getTypeOrmConfig } from './database/typeorm.config';
@@ -20,6 +21,7 @@ import { HealthModule } from './health/health.module';
     }),
     HealthModule,
     AuthModule,
+    StudentsModule,
   ],
 })
 export class AppModule {}
