@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUrl,
   Max,
   Min,
   validateSync,
@@ -26,25 +27,9 @@ class EnvironmentVariables {
   @IsOptional()
   PORT: number;
 
-  @IsString()
+  @IsUrl({ protocols: ['postgresql', 'postgres'], require_tld: false })
   @IsNotEmpty()
-  DB_HOST: string;
-
-  @IsInt()
-  @IsOptional()
-  DB_PORT: number;
-
-  @IsString()
-  @IsNotEmpty()
-  DB_USERNAME: string;
-
-  @IsString()
-  @IsNotEmpty()
-  DB_PASSWORD: string;
-
-  @IsString()
-  @IsNotEmpty()
-  DB_NAME: string;
+  DATABASE_URL: string;
 
   @IsString()
   @IsNotEmpty()
